@@ -113,3 +113,24 @@ else
 		echo "I: This script requires bash. Not processing the $FDEVICE $(basename $0)"
 	fi
 fi
+
+
+# Apply OrangeFox recovery codename patch automatically.
+FOX_PATCH_ROOT="$(gettop)"
+FOX_PATCH_FILE="$FOX_PATCH_ROOT/device/xiaomi/blossom/patches/0001-recovery-detect-device-codename-from-hwname.patch"
+FOX_RECOVERY_DIR="$FOX_PATCH_ROOT/bootable/recovery"
+
+if [ -f "$FOX_PATCH_FILE" ]; then
+    if git -C "$FOX_RECOVERY_DIR" apply --reverse --check "$FOX_PATCH_FILE" >/dev/null 2>&1; then
+        echo "OrangeFox codename patch already applied."
+    elif git -C "$FOX_RECOVERY_DIR" apply --check "$FOX_PATCH_FILE" >/dev/null 2>&1; then
+        git -C "$FOX_RECOVERY_DIR" apply "$FOX_PATCH_FILE" &&
+            echo "OrangeFox codename patch applied."
+    else
+        echo "ERROR: Cannot apply OrangeFox codename patch."
+        return 1
+    fi
+else
+    echo "ERROR: Patch not found: $FOX_PATCH_FILE"
+    return 1
+fi

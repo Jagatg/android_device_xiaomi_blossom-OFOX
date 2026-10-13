@@ -1,0 +1,32 @@
+diff --git a/twrp-functions.cpp b/twrp-functions.cpp
+index 0a8605af..b206fe6b 100755
+--- a/twrp-functions.cpp
++++ b/twrp-functions.cpp
+@@ -2719,18 +2719,20 @@ void TWFunc::Welcome_Message(void)
+ 
+ void TWFunc::Fox_Set_Current_Device_CodeName(void)
+ {
++  string hwname = TWFunc::Fox_Property_Get("ro.boot.hwname");
+   string tmp01 = TWFunc::Fox_Property_Get("ro.product.device");
+   string currdev = DataManager::GetStrValue(FOX_COMPATIBILITY_DEVICE);
+-  string tmp02 = TWFunc::File_Property_Get (Fox_Cfg, "FOX_CURRENT_DEVICE");
++  string tmp02 = TWFunc::File_Property_Get(Fox_Cfg, "FOX_CURRENT_DEVICE");
+ 
+-  if (!tmp02.empty()) {
++  if (!hwname.empty()) {
++    Fox_Current_Device = hwname;
++  } else if (!tmp02.empty()) {
+     Fox_Current_Device = tmp02;
+-    //TWFunc::Fox_Property_Set("ro.product.device", tmp02);
++  } else if (!tmp01.empty() && tmp01 != currdev) {
++    Fox_Current_Device = tmp01;
++  } else {
++    Fox_Current_Device = currdev;
+   }
+-  else if (!tmp01.empty() && tmp01 != currdev) {
+-     Fox_Current_Device = tmp01;
+-  }
+-  else Fox_Current_Device = currdev;
+ 
+   DataManager::SetValue(FOX_COMPATIBILITY_DEVICE, Fox_Current_Device);
+   TWFunc::Fox_Property_Set("ro.product.device", Fox_Current_Device);
