@@ -134,3 +134,33 @@ else
     echo "ERROR: Patch not found: $FOX_PATCH_FILE"
     return 1
 fi
+
+
+# Apply OrangeFox recovery patches automatically.
+FOX_PATCH_ROOT="$(gettop)"
+FOX_RECOVERY_DIR="$FOX_PATCH_ROOT/bootable/recovery"
+FOX_PATCH_DIR="$FOX_PATCH_ROOT/device/xiaomi/blossom/patches"
+
+for FOX_PATCH in \
+    "$FOX_PATCH_DIR/0001-recovery-detect-device-codename-from-hwname.patch" \
+    "$FOX_PATCH_DIR/0002-recovery-ui-qol-improvements.patch"
+do
+    if [ ! -f "$FOX_PATCH" ]; then
+        echo "ERROR: Patch not found: $FOX_PATCH"
+        return 1
+    fi
+
+    if git -C "$FOX_RECOVERY_DIR" apply --reverse --check "$FOX_PATCH" >/dev/null 2>&1; then
+        echo "Already applied: $(basename "$FOX_PATCH")"
+    elif git -C "$FOX_RECOVERY_DIR" apply --check "$FOX_PATCH" >/dev/null 2>&1; then
+        if git -C "$FOX_RECOVERY_DIR" apply "$FOX_PATCH"; then
+            echo "Applied: $(basename "$FOX_PATCH")"
+        else
+            echo "ERROR: Failed applying $(basename "$FOX_PATCH")"
+            return 1
+        fi
+    else
+        echo "ERROR: Patch conflicts with current recovery source: $(basename "$FOX_PATCH")"
+        return 1
+    fi
+done
